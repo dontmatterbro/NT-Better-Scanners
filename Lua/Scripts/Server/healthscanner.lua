@@ -1,4 +1,4 @@
-
+--spaghetti code awaits
 NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, limb) 
     local limbtype = HF.NormalizeLimbType(limb.type)
 
@@ -14,6 +14,8 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
         -- print readout of afflictions
 		
         local readoutstringstart = "Affliction readout for "..targetCharacter.Name.." on limb "..HF.LimbTypeToString(limbtype)..":\n"
+        local readoutstringplow = ""
+        local readoutstringphigh = ""
         local readoutstringlow = ""
         local readoutstringmid = ""
         local readoutstringhigh = ""
@@ -37,7 +39,6 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 			function ScannerVital()
 				if 
 					value.Identifier=="cardiacarrest"
-					or value.Identifier=="bloodpressure"
 					or value.Identifier=="ll_arterialcut"
 					or value.Identifier=="rl_arterialcut"
 					or value.Identifier=="la_arterialcut"
@@ -77,15 +78,20 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
             if (strength >= prefab.ShowInHealthScannerThreshold and afflimbtype==limbtype) then
                 -- add the affliction to the readout
 
-				if (strength < 25) and not ScannerVital() and not ScannerRemoved() then 
+				if (strength < 25) and not ScannerVital() and not ScannerRemoved() and not value.Identifier=="bloodpressure" then 
                 readoutstringlow = readoutstringlow.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 				
-				if strength >= 25 and (strength < 65) and not ScannerVital() and not ScannerRemoved() then 
+				if strength >= 25 and (strength < 65) and not ScannerVital() and not ScannerRemoved() and not value.Identifier=="bloodpressure" then 
                 readoutstringmid = readoutstringmid.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 				
-				if strength >= 65 and not ScannerVital() and not ScannerRemoved() then 
+				if strength >= 65 and not ScannerVital() and not ScannerRemoved() and not value.Identifier=="bloodpressure" then 
                 readoutstringhigh = readoutstringhigh.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 								
+				if value.Identifier=="bloodpressure" and (strength > 130) or (strength < 70) then 
+                readoutstringphigh = readoutstringphigh.."\n"..value.Prefab.Name.Value..": "..strength.."%"
+				else
+				readoutstringplow = readoutstringplow.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				
 				if ScannerVital() then 
                 readoutstringvital = readoutstringvital.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 				
@@ -106,6 +112,8 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 			
 			HF.CharacterToClient(usingCharacter),
 			  "‖color:100,100,200‖"..readoutstringstart.."‖color:end‖"
+			.."‖color:120,200,120‖"..readoutstringplow.."‖color:end‖"
+			.."‖color:255,100,100‖"..readoutstringphigh.."‖color:end‖"
 			.."‖color:100,200,100‖"..readoutstringlow.."‖color:end‖" 
 			.."‖color:200,200,100‖"..readoutstringmid.."‖color:end‖"
 			.."‖color:250,100,100‖"..readoutstringhigh.."‖color:end‖" 
