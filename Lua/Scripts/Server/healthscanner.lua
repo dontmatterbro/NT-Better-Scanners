@@ -1,3 +1,8 @@
+
+
+
+print(ScannerVital)
+
 NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, limb) 
     local limbtype = HF.NormalizeLimbType(limb.type)
 
@@ -15,6 +20,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
         local readoutstringlow = ""
         local readoutstringmid = ""
         local readoutstringhigh = ""
+        local readoutstringvital = ""
         local afflictionlist = targetCharacter.CharacterHealth.GetAllAfflictions()
         local afflictionsdisplayed = 0
         for value in afflictionlist do
@@ -28,18 +34,30 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
             
             afflimbtype = HF.NormalizeLimbType(afflimbtype)
 
+			function ScannerVital()
+				if 
+					value.Prefab.Name.Value=="Cardiac arrest"
+					or value.Prefab.Name.Value=="Blood pressure"
+					
+					then return true
+				end
+			end
+
             if (strength >= prefab.ShowInHealthScannerThreshold and afflimbtype==limbtype) then
                 -- add the affliction to the readout
 				
-				if (strength < 25) then 
+				if (strength < 25) and not ScannerVital() then 
                 readoutstringlow = readoutstringlow.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 				
-				if strength >= 25 and (strength < 65) then 
+				if strength >= 25 and (strength < 65) and not ScannerVital() then 
                 readoutstringmid = readoutstringmid.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 				
-				if strength >= 65 then 
+				if strength >= 65 and not ScannerVital() then 
                 readoutstringhigh = readoutstringhigh.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 								
+				if ScannerVital() then 
+                readoutstringvital = readoutstringvital.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				
 				afflictionsdisplayed = afflictionsdisplayed + 1
             end
         end
@@ -54,9 +72,10 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 			
 			HF.CharacterToClient(usingCharacter),
 			  "‖color:100,100,200‖"..readoutstringstart.."‖color:end‖"
-			.."‖color:50,255,0‖"..readoutstringlow.."‖color:end‖" 
-			.."‖color:255,255,0‖"..readoutstringmid.."‖color:end‖"
-			.."‖color:255,0,0‖"..readoutstringhigh.."‖color:end‖" 
+			.."‖color:100,200,100‖"..readoutstringlow.."‖color:end‖" 
+			.."‖color:200,200,100‖"..readoutstringmid.."‖color:end‖"
+			.."‖color:250,100,100‖"..readoutstringhigh.."‖color:end‖" 
+			.."‖color:255,0,0‖"..readoutstringvital.."‖color:end‖" 
 			
 					)
         end, 2000)
