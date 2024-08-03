@@ -1,5 +1,5 @@
-NTSCAN = {} -- Neurotrauma Scanner
-NTSCAN.Name="Scanner"
+NTSCAN = {} -- Neurotrauma Better Scanner
+NTSCAN.Name="Better Scanner"
 NTSCAN.Version = "A1.0.0"
 NTSCAN.VersionNum = 01000000
 NTSCAN.MinNTVersion = "A1.9.4h1"
@@ -9,7 +9,7 @@ Timer.Wait(function() if NTC ~= nil then NTC.RegisterExpansion(NTSCAN) end end,1
 
 Timer.Wait(function() 
 	if SERVER and NTC == nil then --checks if NT is installed
-		print("Error loading NT Scanner: It seems Neurotrauma isn't loaded!")
+		print("Error loading NT Better Scanner: It seems Neurotrauma isn't loaded!")
 		return
 	end
 	

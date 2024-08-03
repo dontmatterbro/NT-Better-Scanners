@@ -1,4 +1,4 @@
---spaghetti code awaits
+--spaghetti code awaits, I might optimise this further, but for now this should suffice
 NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, limb) 
     local limbtype = HF.NormalizeLimbType(limb.type)
 
@@ -13,7 +13,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 
         -- print readout of afflictions
 		
-        local readoutstringstart = "Affliction readout for "..targetCharacter.Name.." on limb "..HF.LimbTypeToString(limbtype)..":\n"
+        local readoutstringstart = "‖color:100,100,200‖".."Affliction readout for ".."‖color:end‖".."‖color:125,125,225‖"..targetCharacter.Name.."‖color:end‖".."‖color:100,100,200‖".." on limb "..HF.LimbTypeToString(limbtype)..":\n".."‖color:end‖"
         local readoutstringplow = ""
         local readoutstringphigh = ""
         local readoutstringlow = ""
@@ -24,7 +24,9 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 		
         local afflictionlist = targetCharacter.CharacterHealth.GetAllAfflictions()
         local afflictionsdisplayed = 0
+		
         for value in afflictionlist do
+		
             local strength = HF.Round(value.Strength)
             local prefab = value.Prefab
             local limb = targetCharacter.CharacterHealth.GetAfflictionLimb(value)
@@ -35,78 +37,111 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
             
             afflimbtype = HF.NormalizeLimbType(afflimbtype)
 
-			--afflictions that don't make sense with % 
-			function ScannerVital()
-				if 
-					value.Identifier=="cardiacarrest"
-					or value.Identifier=="ll_arterialcut"
-					or value.Identifier=="rl_arterialcut"
-					or value.Identifier=="la_arterialcut"
-					or value.Identifier=="ra_arterialcut"
-					or value.Identifier=="t_arterialcut"
-					or value.Identifier=="h_arterialcut"
-					or value.Identifier=="tra_amputation"
-					or value.Identifier=="tla_amputation"
-					or value.Identifier=="trl_amputation"
-					or value.Identifier=="tll_amputation"
-					or value.Identifier=="th_amputation" --ouch
-					or value.Identifier=="eyesdead"
-					
-					then return true
-				end
-			end
+			--vital afflictions
+			ScannerVital = {
 
-			--organ removal afflictions
-			function ScannerRemoved()
-				if 
-					value.Identifier=="hearthremoved"
-					or value.Identifier=="brainremoved"
-					or value.Identifier=="lungremoved"
-					or value.Identifier=="kidneyremoved"
-					or value.Identifier=="liverremoved"
-					or value.Identifier=="noeye"
-					or value.Identifier=="sra_amputation"
-					or value.Identifier=="sla_amputation"
-					or value.Identifier=="srl_amputation"
-					or value.Identifier=="sll_amputation"
-					or value.Identifier=="sh_amputation"
-					
-					then return true
-				end
-			end
-			
-			function ScannerPressure()
-				if value.Identifier=="bloodpressure"
+				"cardiacarrest",
+				"ll_arterialcut",
+				"rl_arterialcut",
+				"la_arterialcut",
+				"ra_arterialcut",
+				"t_arterialcut",
+				"h_arterialcut",
+				"tra_amputation",
+				"tla_amputation",
+				"trl_amputation",
+				"tll_amputation",
+				"th_amputation", --ouch
+				"eyesdead"
 				
-				then return true end
-			end
+			}
+
+			--organ removals
+			ScannerRemoved = {
 			
+				"heartremoved",
+				"brainremoved",
+				"lungremoved",
+				"kidneyremoved",
+				"liverremoved",
+				"noeye",
+				"sra_amputation",
+				"sla_amputation",
+				"srl_amputation",
+				"sll_amputation",
+				"sh_amputation"
+
+			}
+			
+			--blood pressure
+			ScannerPressure = {
+			
+				"bloodpressure"
+			
+			}
+		
             if (strength >= prefab.ShowInHealthScannerThreshold and afflimbtype==limbtype) then
                 -- add the affliction to the readout
 
-				if (strength < 25) and not ScannerVital() and not ScannerRemoved() and not ScannerPressure() then 
-                readoutstringlow = readoutstringlow.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+
+				if --low
+					(strength < 25) 
+					and not HF.TableContains(ScannerVital, value.Identifier) 
+					and not HF.TableContains(ScannerRemoved, value.Identifier) 
+					and not HF.TableContains(ScannerPressure, value.Identifier) 
+				then
+					readoutstringlow = readoutstringlow.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
-				if strength >= 25 and (strength < 65) and not ScannerVital() and not ScannerRemoved() and not ScannerPressure() then 
-                readoutstringmid = readoutstringmid.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 				
-				if strength >= 65 and not ScannerVital() and not ScannerRemoved() and not ScannerPressure() then 
-                readoutstringhigh = readoutstringhigh.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
-								
-				if ScannerVital() then 
-                readoutstringvital = readoutstringvital.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				if --mid
+					strength >= 25 and (strength < 65) 
+					and not HF.TableContains(ScannerVital, value.Identifier) 
+					and not HF.TableContains(ScannerRemoved, value.Identifier) 
+					and not HF.TableContains(ScannerPressure, value.Identifier) 
+				then
+					readoutstringmid = readoutstringmid.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
-				if ScannerRemoved() then 
-                readoutstringremoved = readoutstringremoved.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
 				
-				if value.Identifier=="bloodpressure" and ((strength > 130) or (strength < 70)) then 
-                readoutstringphigh = readoutstringphigh.."\n"..value.Prefab.Name.Value..": "..strength.."%"
-				elseif value.Identifier=="bloodpressure" then
-				readoutstringplow = readoutstringplow.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				if --high
+					strength >= 65 
+					and not HF.TableContains(ScannerVital, value.Identifier) 
+					and not HF.TableContains(ScannerRemoved, value.Identifier) 
+					and not HF.TableContains(ScannerPressure, value.Identifier) 
+				then 
+					readoutstringhigh = readoutstringhigh.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
+						
+						
+				if --vital
+					HF.TableContains(ScannerVital, value.Identifier) 
+				then 
+					readoutstringvital = readoutstringvital.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
+				if 
+					HF.TableContains(ScannerRemoved, value.Identifier) 
+				then
+					readoutstringremoved = readoutstringremoved.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
+				
+				
+				if --pressure
+					HF.TableContains(ScannerPressure, value.Identifier) 
+					and ((strength > 130) or (strength < 70)) 
+				then 
+					readoutstringphigh = readoutstringphigh.."\n"..value.Prefab.Name.Value..": "..strength.."%"
+				
+				elseif 
+					HF.TableContains(ScannerPressure, value.Identifier) 
+				then
+					readoutstringplow = readoutstringplow.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
 				afflictionsdisplayed = afflictionsdisplayed + 1
-            end
+            
+			end
         end
 
         -- add a message in case there is nothing to display
@@ -118,7 +153,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
             HF.DMClient(
 			
 			HF.CharacterToClient(usingCharacter),
-			  "‖color:100,100,200‖"..readoutstringstart.."‖color:end‖"
+			  readoutstringstart --color values defined up there
 			.."‖color:120,200,120‖"..readoutstringplow.."‖color:end‖"
 			.."‖color:255,100,100‖"..readoutstringphigh.."‖color:end‖"
 			.."‖color:100,200,100‖"..readoutstringlow.."‖color:end‖" 
@@ -134,7 +169,7 @@ end
 
 
 
-
+--this will probably get reworked depending on feedback
 NT.ItemMethods.bloodanalyzer = function(item, usingCharacter, targetCharacter, limb) 
     
     -- only work if no cooldown
@@ -165,7 +200,7 @@ NT.ItemMethods.bloodanalyzer = function(item, usingCharacter, targetCharacter, l
 
     -- print readout of afflictions
     local bloodtype = AfflictionPrefab.Prefabs[NT.GetBloodtype(targetCharacter)].Name.Value
-	local readoutstringstart = "Affliction readout for the blood of "..targetCharacter.Name..":\n"
+	local readoutstringstart = "‖color:100,100,200‖".."Affliction readout for the blood of ".."‖color:end‖".."‖color:125,125,225‖"..targetCharacter.Name..":\n".."‖color:end‖"
     local readoutstringbloodtype = "\nBloodtype: "..bloodtype
     local readoutstringplow = ""
     local readoutstringphigh = ""
@@ -173,49 +208,79 @@ NT.ItemMethods.bloodanalyzer = function(item, usingCharacter, targetCharacter, l
     local readoutstringmid = ""
     local readoutstringhigh = ""
     local readoutstringpoison = ""
+	
     local afflictionlist = targetCharacter.CharacterHealth.GetAllAfflictions()
     local afflictionsdisplayed = 0
+	
     for value in afflictionlist do
+	
         local strength = HF.Round(value.Strength)
         local prefab = value.Prefab
 
-			--poisonings
-			function AnalyzerPoison()
-				if 
-					value.Identifier=="morbusinepoisoning"
-					or value.Identifier=="cyanidepoisoning"
-					or value.Identifier=="sufforinpoisoning"
+		--poison afflictions
+		AnalyzerPoison = {
+		
+			"morbusinepoisoning",
+			"cyanidepoisoning",
+			"sufforinpoisoning"
+		
+		} 
 
-					
-					then return true
-				end
-			end
-
-
+		--blood pressure 
+		AnalyzerPressure = {
+		
+			"bloodpressure"
+			
+		}
 
 
         if (strength > 2 and HF.TableContains(NT.HematologyDetectable,prefab.Identifier.Value)) then
             -- add the affliction to the readout
 				
-				if (strength < 25) and not AnalyzerPoison() and not value.Identifier=="bloodpressure" then 
-                readoutstringlow = readoutstringlow.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				if --low
+					(strength < 25) 
+					and not HF.TableContains(AnalyzerPoison, value.Identifier)
+					and not HF.TableContains(AnalyzerPressure, value.Identifier) 
+				then 
+					readoutstringlow = readoutstringlow.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
-				if strength >= 25 and (strength < 65) and not AnalyzerPoison() and not value.Identifier=="bloodpressure" then 
-                readoutstringmid = readoutstringmid.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				if --mid
+					((strength >= 25) and (strength < 65))
+					and not HF.TableContains(AnalyzerPoison, value.Identifier)
+					and not HF.TableContains(AnalyzerPressure, value.Identifier)
+				then 
+					readoutstringmid = readoutstringmid.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
-				if strength >= 65 and not AnalyzerPoison() and not value.Identifier=="bloodpressure" then 
-                readoutstringhigh = readoutstringhigh.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				if --high
+					(strength >= 65)
+					and not HF.TableContains(AnalyzerPoison, value.Identifier) 
+					and not HF.TableContains(AnalyzerPressure, value.Identifier)
+				then 
+					readoutstringhigh = readoutstringhigh.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
-				if value.Identifier=="bloodpressure" and (strength > 130) or (strength < 70) then 
-                readoutstringphigh = readoutstringphigh.."\n"..value.Prefab.Name.Value..": "..strength.."%"
-				else
-				readoutstringplow = readoutstringplow.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
+				if --poison
+					HF.TableContains(AnalyzerPoison, value.Identifier)
+				then 
+					readoutstringpoison = readoutstringpoison.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
+				if --pressure
+					HF.TableContains(AnalyzerPressure, value.Identifier) 
+					and ((strength > 130) or (strength < 70)) 
+				then 
+					readoutstringphigh = readoutstringphigh.."\n"..value.Prefab.Name.Value..": "..strength.."%"
 				
-				if AnalyzerPoison() then 
-                readoutstringpoison = readoutstringpoison.."\n"..value.Prefab.Name.Value..": "..strength.."%" end
-				
-            afflictionsdisplayed = afflictionsdisplayed + 1
+				elseif 
+					HF.TableContains(AnalyzerPressure, value.Identifier)
+				then
+					readoutstringplow = readoutstringplow.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
+
+				afflictionsdisplayed = afflictionsdisplayed + 1
+			
         end
     end
 
@@ -227,7 +292,7 @@ NT.ItemMethods.bloodanalyzer = function(item, usingCharacter, targetCharacter, l
     HF.DMClient(
 			
 			HF.CharacterToClient(usingCharacter),
-			  "‖color:100,100,200‖"..readoutstringstart.."‖color:end‖"
+			  readoutstringstart --values defined up there
 			.."‖color:255,255,255‖"..readoutstringbloodtype.."‖color:end‖"
 			.."‖color:120,200,120‖"..readoutstringplow.."‖color:end‖"
 			.."‖color:255,100,100‖"..readoutstringphigh.."‖color:end‖"
