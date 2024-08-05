@@ -21,6 +21,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
         local readoutstringhigh = ""
         local readoutstringvital = ""
         local readoutstringremoved = ""
+        local readoutstringgenes = ""
 		
         local afflictionlist = targetCharacter.CharacterHealth.GetAllAfflictions()
         local afflictionsdisplayed = 0
@@ -37,6 +38,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
             
             afflimbtype = HF.NormalizeLimbType(afflimbtype)
 
+			--there probably is a better way to define these, I'll look into it later on
 			--vital afflictions
 			ScannerVital = {
 
@@ -80,6 +82,34 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 			
 			}
 		
+			--genes
+			ScannerGenes = {
+			
+				"husktransformimmunity",
+				"increasedmeleedamageondamage",
+				"hyperactivityondamage",
+				"vigorondamage",
+				"healdamage",
+				"increasedmeleedamage",
+				"increasedwalkingspeed",
+				"decreasedoxygenconsumption",
+				"damageresistance",
+				"naturalrangedweapon",
+				"naturalmeleeweapon",
+				"increasedswimmingspeed",
+				"inflamedlung",
+				"musculardystrophy",
+				"decrepify",
+				"glassjaw",
+				"outsideinfluence",
+				"increasedswimmingspeed",
+				"xenobiology",
+				"hypersensitivity",
+				"rigidjoints",
+				"tunnelvision"
+			
+			}
+		
             if (strength >= prefab.ShowInHealthScannerThreshold and afflimbtype==limbtype) then
                 -- add the affliction to the readout
 
@@ -89,6 +119,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 					and not HF.TableContains(ScannerVital, value.Identifier) 
 					and not HF.TableContains(ScannerRemoved, value.Identifier) 
 					and not HF.TableContains(ScannerPressure, value.Identifier) 
+					and not HF.TableContains(ScannerGenes, value.Identifier) 
 				then
 					readoutstringlow = readoutstringlow.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
 				end
@@ -99,6 +130,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 					and not HF.TableContains(ScannerVital, value.Identifier) 
 					and not HF.TableContains(ScannerRemoved, value.Identifier) 
 					and not HF.TableContains(ScannerPressure, value.Identifier) 
+					and not HF.TableContains(ScannerGenes, value.Identifier) 
 				then
 					readoutstringmid = readoutstringmid.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
 				end
@@ -109,6 +141,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 					and not HF.TableContains(ScannerVital, value.Identifier) 
 					and not HF.TableContains(ScannerRemoved, value.Identifier) 
 					and not HF.TableContains(ScannerPressure, value.Identifier) 
+					and not HF.TableContains(ScannerGenes, value.Identifier) 
 				then 
 					readoutstringhigh = readoutstringhigh.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
 				end
@@ -120,12 +153,18 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 					readoutstringvital = readoutstringvital.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
 				end
 				
-				if 
+				
+				if --removed
 					HF.TableContains(ScannerRemoved, value.Identifier) 
 				then
 					readoutstringremoved = readoutstringremoved.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
 				end
 				
+				if --genes
+					HF.TableContains(ScannerGenes, value.Identifier) 
+				then
+					readoutstringgenes = readoutstringgenes.."\n"..value.Prefab.Name.Value..": "..strength.."%" 
+				end
 				
 				if --pressure
 					HF.TableContains(ScannerPressure, value.Identifier) 
@@ -161,6 +200,7 @@ NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, l
 			.."‖color:250,100,100‖"..readoutstringhigh.."‖color:end‖" 
 			.."‖color:255,0,0‖"..readoutstringvital.."‖color:end‖" 
 			.."‖color:0,255,255‖"..readoutstringremoved.."‖color:end‖" 
+			.."‖color:180,50,200‖"..readoutstringgenes.."‖color:end‖"
 			
 					)
         end, 2000)
