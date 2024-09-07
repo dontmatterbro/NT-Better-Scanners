@@ -1,7 +1,7 @@
 NTSCAN = {} -- Neurotrauma Better Scanner
 NTSCAN.Name="Better Scanner"
-NTSCAN.Version = "A1.0.0"
-NTSCAN.VersionNum = 01000000
+NTSCAN.Version = "A1.0.1h1"
+NTSCAN.VersionNum = 01000101
 NTSCAN.MinNTVersion = "A1.9.4h1"
 NTSCAN.MinNTVersionNum = 01090401
 NTSCAN.Path = table.pack(...)[1]
