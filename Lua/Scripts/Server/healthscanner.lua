@@ -1,4 +1,6 @@
---spaghetti code awaits, I might optimise this further, but for now this should suffice
+if (NTC==nil) then return end --in case init.lua fucks up for some retarded reason (which has happened, likely due to a 3rd party mod)
+
+--spaghetti code awaits, I might optimise this further, but for now this should suffice (I didn't lol)
 NT.ItemMethods.healthscanner = function(item, usingCharacter, targetCharacter, limb) 
     local limbtype = HF.NormalizeLimbType(limb.type)
 
